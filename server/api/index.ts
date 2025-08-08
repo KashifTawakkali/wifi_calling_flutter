@@ -23,6 +23,12 @@ let isConnected = false;
 
 async function ensureDb() {
   if (isConnected) return;
+  const mongoUri = process.env.MONGO_URI as string | undefined;
+  if (mongoUri) {
+    await mongoose.connect(mongoUri);
+    isConnected = true;
+    return;
+  }
   const url = process.env.URL as string | undefined;
   const dbName = process.env.DBNAME as string | undefined;
   const user = process.env.USERNAME as string | undefined;
