@@ -13,14 +13,17 @@ class AuthService {
   }
 
   Future<bool> login(String usernameOrEmail, String password) async {
+    final url = Uri.parse('${Constants.apiBaseUrl}/auth/login');
+    print('AuthService.login -> POST $url');
     final res = await http.post(
-      Uri.parse('${Constants.apiBaseUrl}/auth/login'),
+      url,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'usernameOrEmail': usernameOrEmail,
         'password': password,
       }),
     );
+    print('AuthService.login <- status ${res.statusCode}');
 
     if (res.statusCode == 200) {
       final body = jsonDecode(res.body) as Map<String, dynamic>;
@@ -31,15 +34,18 @@ class AuthService {
       await prefs.setString('user', jsonEncode(user));
       _token = token;
       return true;
+    } else {
+      print('AuthService.login error body: ${res.body}');
     }
     return false;
   }
 
   Future<bool> register(String usernameOrEmail, String password) async {
-    // If username looks like email, use it as email too for demo.
     final isEmail = usernameOrEmail.contains('@');
+    final url = Uri.parse('${Constants.apiBaseUrl}/auth/register');
+    print('AuthService.register -> POST $url');
     final res = await http.post(
-      Uri.parse('${Constants.apiBaseUrl}/auth/register'),
+      url,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'username': isEmail ? usernameOrEmail.split('@').first : usernameOrEmail,
@@ -47,6 +53,7 @@ class AuthService {
         'password': password,
       }),
     );
+    print('AuthService.register <- status ${res.statusCode}');
 
     if (res.statusCode == 200) {
       final body = jsonDecode(res.body) as Map<String, dynamic>;
@@ -57,6 +64,8 @@ class AuthService {
       await prefs.setString('user', jsonEncode(user));
       _token = token;
       return true;
+    } else {
+      print('AuthService.register error body: ${res.body}');
     }
     return false;
   }

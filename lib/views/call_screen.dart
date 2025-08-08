@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../viewmodels/call_viewmodel.dart';
 import '../models/call_model.dart';
 import '../utils/app_routes.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 class CallScreen extends StatelessWidget {
   const CallScreen({super.key});
@@ -11,10 +12,16 @@ class CallScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CallViewModel>(
       builder: (context, callVM, _) {
-        final connected = callVM.status == CallStatus.connected;
+        final status = callVM.status;
         return Scaffold(
           appBar: AppBar(
-            title: Text(connected ? 'In Call' : 'Ringing...'),
+            title: Text(
+              status == CallStatus.connected
+                  ? 'Connected'
+                  : status == CallStatus.connecting
+                      ? 'Connecting...'
+                      : 'Ringing...'
+            ),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () {
@@ -23,66 +30,61 @@ class CallScreen extends StatelessWidget {
               },
             ),
           ),
-          body: Stack(
+          body: Column(
             children: [
-              Center(
-                child: Icon(
-                  callVM.currentCall?.isVideo == true ? Icons.videocam : Icons.call,
-                  size: 120,
-                  color: Colors.blueGrey,
+              Expanded(
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: RTCVideoView(callVM.remoteRenderer, objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitContain),
+                    ),
+                    Positioned(
+                      right: 16,
+                      top: 16,
+                      width: 120,
+                      height: 160,
+                      child: Container(
+                        decoration: BoxDecoration(border: Border.all(color: Colors.white24), borderRadius: BorderRadius.circular(8)),
+                        child: RTCVideoView(callVM.localRenderer, mirror: true),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               if (callVM.showCaptions)
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    margin: const EdgeInsets.all(12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'Captions on (mock overlay)',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: const Text('Captions on (mock overlay)'),
                 ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      onPressed: callVM.toggleMute,
+                      icon: Icon(callVM.isMuted ? Icons.mic_off : Icons.mic),
+                    ),
+                    IconButton(
+                      onPressed: callVM.switchCamera,
+                      icon: const Icon(Icons.cameraswitch),
+                    ),
+                    FloatingActionButton(
+                      backgroundColor: Colors.red,
+                      onPressed: () {
+                        callVM.endCall();
+                        Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home));
+                      },
+                      child: const Icon(Icons.call_end),
+                    ),
+                    IconButton(
+                      onPressed: callVM.toggleCaptions,
+                      icon: Icon(callVM.showCaptions ? Icons.closed_caption_disabled : Icons.closed_caption),
+                    ),
+                  ],
+                ),
+              ),
             ],
-          ),
-          bottomNavigationBar: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  onPressed: callVM.toggleMute,
-                  icon: Icon(callVM.isMuted ? Icons.mic_off : Icons.mic),
-                ),
-                IconButton(
-                  onPressed: callVM.switchCamera,
-                  icon: const Icon(Icons.cameraswitch),
-                ),
-                FloatingActionButton(
-                  backgroundColor: Colors.red,
-                  onPressed: () {
-                    callVM.endCall();
-                    Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home));
-                  },
-                  child: const Icon(Icons.call_end),
-                ),
-                IconButton(
-                  onPressed: callVM.toggleCaptions,
-                  icon: Icon(callVM.showCaptions ? Icons.closed_caption_disabled : Icons.closed_caption),
-                ),
-                IconButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, AppRoutes.transcript);
-                  },
-                  icon: const Icon(Icons.subtitles),
-                ),
-              ],
-            ),
           ),
         );
       },

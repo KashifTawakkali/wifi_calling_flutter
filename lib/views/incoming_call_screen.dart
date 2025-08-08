@@ -39,7 +39,7 @@ class IncomingCallScreen extends StatelessWidget {
                 FloatingActionButton(
                   backgroundColor: Colors.green,
                   onPressed: () {
-                    callVM.acceptIncomingCall(call);
+                    callVM.acceptIncomingCallLegacy(call);
                     Navigator.pushReplacementNamed(context, AppRoutes.call);
                   },
                   child: const Icon(Icons.call),

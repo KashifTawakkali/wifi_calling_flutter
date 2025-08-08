@@ -24,6 +24,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   void _register() async {
     if (_formKey.currentState!.validate()) {
+      print('Register pressed with username/email: ${_usernameController.text}');
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
       bool success = await authViewModel.register(
         _usernameController.text,
@@ -31,8 +32,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       );
 
       if (success) {
+        if (!mounted) return;
         Navigator.of(context).pushReplacementNamed(AppRoutes.home);
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(authViewModel.errorMessage ?? 'Registration failed')),
         );

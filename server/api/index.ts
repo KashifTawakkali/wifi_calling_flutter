@@ -25,7 +25,7 @@ async function ensureDb() {
   if (isConnected) return;
   const mongoUri = process.env.MONGO_URI as string | undefined;
   if (mongoUri) {
-    await mongoose.connect(mongoUri);
+    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 8000 } as any);
     isConnected = true;
     return;
   }
@@ -36,7 +36,7 @@ async function ensureDb() {
   if (!url || !dbName || !user || !pass) {
     throw new Error('Missing Mongo env vars');
   }
-  await mongoose.connect(url, { dbName, user, pass } as any);
+  await mongoose.connect(url, { dbName, user, pass, serverSelectionTimeoutMS: 8000 } as any);
   isConnected = true;
 }
 
@@ -45,7 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await ensureDb();
   } catch (e: any) {
     console.error('DB connect failed', e?.message || e);
-    return res.status(500).json({ message: 'DB connect failed' });
+    return res.status(500).json({ message: 'DB connect failed', error: String(e?.message || e) });
   }
   return new Promise<void>((resolve) => {
     app(req as any, res as any, () => resolve());

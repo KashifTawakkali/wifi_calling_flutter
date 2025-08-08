@@ -24,6 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
+      print('Login pressed with username/email: ${_usernameController.text}');
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
       bool success = await authViewModel.login(
         _usernameController.text,
@@ -31,8 +32,10 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (success) {
+        if (!mounted) return;
         Navigator.of(context).pushReplacementNamed(AppRoutes.home);
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(authViewModel.errorMessage ?? 'Login failed')),
         );

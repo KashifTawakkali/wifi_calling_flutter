@@ -9,11 +9,18 @@ class Constants {
     // 'turn:your.turn.server:3478',
   ];
 
+  static const bool useProdApi = true;
+  static const String prodApiBase = 'https://wifi-calling-flutter-p7pq.vercel.app';
+
   static String get apiBaseUrl {
+    if (useProdApi) return prodApiBase;
     if (kIsWeb) return 'http://localhost:3000';
     if (Platform.isAndroid) return 'http://10.0.2.2:3000';
     return 'http://localhost:3000';
   }
 
-  static String get socketUrl => apiBaseUrl;
+  static String get socketUrl {
+    if (Platform.isAndroid) return 'http://10.0.2.2:3000';
+    return 'http://localhost:3000';
+  }
 } 

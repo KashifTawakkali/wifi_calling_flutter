@@ -18,6 +18,7 @@ class CallInfo {
 
 enum CallStatus {
   ringing,
+  connecting,
   connected,
   ended,
 } 
